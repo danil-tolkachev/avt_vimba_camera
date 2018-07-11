@@ -82,6 +82,7 @@ class AvtVimbaCamera {
   double getTimestamp(void);
   bool resetTimestamp(void);
   double getDeviceTemp(void);
+  bool setPtpAcquisitionGateTime(ros::Time t);
 
   CameraPtr getCameraPtr(void) {
     return vimba_camera_ptr_;

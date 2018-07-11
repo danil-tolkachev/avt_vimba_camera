@@ -65,6 +65,11 @@ MonoCamera::MonoCamera(ros::NodeHandle& nh, ros::NodeHandle& nhp) : nh_(nh), nhp
   reconfigure_server_ = boost::make_shared <ReconfigureServer>(nhp_);
   ReconfigureServer::CallbackType f = boost::bind(&avt_vimba_camera::MonoCamera::configure, this, _1, _2);
   reconfigure_server_->setCallback(f);
+
+  ptp_gate_time_service_ = nhp_.advertiseService(
+    "set_ptp_gate_time",
+    &MonoCamera::ptp_gate_time_callback,
+    this);
 }
 
 MonoCamera::~MonoCamera(void) {
@@ -173,4 +178,10 @@ void MonoCamera::updateCameraInfo(const avt_vimba_camera::AvtVimbaCameraConfig& 
   info_man_->setCameraInfo(ci);
 }
 
-};
+bool MonoCamera::ptp_gate_time_callback(PtpGateTime::Request &request,
+                                        PtpGateTime::Response &response)
+{
+  return cam_.setPtpAcquisitionGateTime(request.ptp_gate_time);
+}
+
+}

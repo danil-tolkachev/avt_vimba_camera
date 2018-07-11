@@ -36,6 +36,7 @@
 #include <avt_vimba_camera/avt_vimba_camera.h>
 #include <avt_vimba_camera/AvtVimbaCameraConfig.h>
 #include <avt_vimba_camera/avt_vimba_api.h>
+#include <avt_vimba_camera/PtpGateTime.h>
 
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
@@ -88,6 +89,11 @@ class MonoCamera {
   void frameCallback(const FramePtr& vimba_frame_ptr);
   void configure(Config& newconfig, uint32_t level);
   void updateCameraInfo(const Config& config);
+
+  // Services
+  ros::ServiceServer ptp_gate_time_service_;
+  bool ptp_gate_time_callback(PtpGateTime::Request &request,
+                              PtpGateTime::Response &response);
 };
 }
 #endif

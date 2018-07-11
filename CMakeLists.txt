@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_geometry
   image_transport
   message_filters
+  message_generation
   roscpp
   sensor_msgs
   std_msgs
@@ -27,9 +28,30 @@ generate_dynamic_reconfigure_options(
   cfg/AvtVimbaCameraStereo.cfg
 )
 
+# Declare the service files to be built
+add_service_files(
+  FILES
+  PtpGateTime.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS camera_info_manager diagnostic_updater dynamic_reconfigure image_geometry image_transport roscpp sensor_msgs std_msgs polled_camera
+  CATKIN_DEPENDS
+  camera_info_manager
+  diagnostic_updater
+  dynamic_reconfigure
+  image_geometry
+  image_transport
+  message_runtime
+  roscpp
+  sensor_msgs
+  std_msgs
+  polled_camera
 )
 
 ###########

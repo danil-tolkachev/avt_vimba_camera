@@ -387,6 +387,11 @@ double AvtVimbaCamera::getTimestamp(void) {
   return timestamp;
 }
 
+bool AvtVimbaCamera::setPtpAcquisitionGateTime(ros::Time t)
+{
+  return setFeatureValue("PtpAcquisitionGateTime", (VmbInt64_t)t.toNSec());
+}
+
 // Template function to GET a feature value from the camera
 template<typename T>
 bool AvtVimbaCamera::getFeatureValue(const std::string& feature_str, T& val) {
