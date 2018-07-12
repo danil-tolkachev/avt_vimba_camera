@@ -70,6 +70,8 @@ class Sync {
     double last_ros_sync_; //!> Last ros time sync
     double timer_period_; //!> Timer period
     double max_unsync_time_; //!> Maximum time without sync
+    double max_unsync_diff_; //!> Value of unsyncing without sync
+    ros::Time last_frame_;
     ros::Timer sync_timer_; //!> Timer to check the image sync
     string camera_; //!> Camera name
 
@@ -84,6 +86,10 @@ class Sync {
     image_transport::ImageTransport it_;
 
     ros::Publisher pub_info_; //!> Publish reset info
+
+    // Services
+    ros::ServiceClient client_left_;
+    ros::ServiceClient client_right_;
 };
 }
 #endif

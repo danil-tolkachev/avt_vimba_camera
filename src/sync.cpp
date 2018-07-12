@@ -31,6 +31,7 @@
 /// THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <avt_vimba_camera/sync.h>
+#include <avt_vimba_camera/PtpGateTime.h>
 #include <stdlib.h>
 
 namespace avt_vimba_camera {
@@ -41,6 +42,7 @@ Sync::Sync(ros::NodeHandle nh, ros::NodeHandle nhp): nh_(nh), nhp_(nhp), init_(f
   nhp_.param("camera", camera_, string("/stereo_down"));
   nhp_.param("timer_period", timer_period_, 10.0);
   nhp_.param("max_unsync_time", max_unsync_time_, 5.0);
+  max_unsync_diff_ = 0;
 }
 
 void Sync::run()
@@ -64,6 +66,12 @@ void Sync::run()
   // Publish info
   pub_info_ = nhp_.advertise<std_msgs::String>("info", 1, true);
 
+  // Services
+  client_left_ = nh_.serviceClient<PtpGateTime>(
+    camera_ + "/left/camera/set_ptp_gate_time");
+  client_right_ = nh_.serviceClient<PtpGateTime>(
+    camera_ + "/right/camera/set_ptp_gate_time");
+
   ros::spin();
 }
 
@@ -77,6 +85,10 @@ void Sync::msgsCallback(const sensor_msgs::ImageConstPtr& l_img_msg,
   init_ = true;
 
   last_ros_sync_ = ros::Time::now().toSec();
+  last_frame_ = l_img_msg->header.stamp;
+  double t0 = l_img_msg->header.stamp.toSec();
+  double t1 = r_img_msg->header.stamp.toSec();
+  max_unsync_diff_ = abs(t0 - t1);
 }
 
 void Sync::syncCallback(const ros::TimerEvent&)
@@ -97,7 +109,23 @@ void Sync::syncCallback(const ros::TimerEvent&)
                boost::lexical_cast<string>(now) + "s.";
     pub_info_.publish(msg);
   }
+  else
+  {
+    if (max_unsync_diff_ > 0)
+    {
+      ROS_WARN_STREAM("[SyncNode]: Sync diff " << max_unsync_diff_);
+      PtpGateTime srv;
+      srv.request.ptp_gate_time.fromNSec(
+          last_frame_.toNSec() / 1000000000 * 1000000000 - 0);
+      srv.request.ptp_gate_time += ros::Duration(5, 0);
+      if(!client_left_.call(srv))
+        ROS_WARN_STREAM("Failed to set ptp gate time for left camera!");
+      if(!client_right_.call(srv))
+        ROS_WARN_STREAM("Failed to set ptp gate time for right camera!");
+    }
+    max_unsync_diff_ = 0;
+  }
+
 }
 
-
-};
+}
